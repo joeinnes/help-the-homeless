@@ -1,0 +1,21 @@
+<div class="ui fullscreen modal">
+  <div class="header">Make a report</div>
+  <div class="content">
+    <form class="ui form" id="report-form">
+      <div class="field">
+        <label>Notes</label>
+        <textarea rows="2" name="notes" id="notes" required></textarea>
+      </div>
+      <div class="field">
+        <label>Location</label>
+        <input type="text" id="address" name="address" readonly>
+        <input type="hidden" id="lat" name="lat">
+        <input type="hidden" id="lng" name="lng">
+      </div>
+    </div>
+    <div class="actions">
+      <div class="ui cancel red button">Cancel</div>
+      <div class="ui approve green button">Report</div>
+    </div>
+  </form>
+</div>

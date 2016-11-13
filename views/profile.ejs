@@ -1,0 +1,40 @@
+<% include ./partials/header %>
+<div class="ui container">
+<h1 class="ui header"><%= user.name %></h1>
+  <form class="ui form" id="profile-form">
+    <div class="field">
+      <label>Contact Number</label>
+      <input name="contactNumber" id="phonenumber" placeholder="Contact Number" value="<%= user.contactNo %>">
+    </div>
+  
+    <div class="field">
+      <label>Preferred Language</label>
+      <div class="ui fluid search selection dropdown">
+        <input type="hidden" name="lang" value="<%= user.lang %>" id="lang">
+        <i class="dropdown icon"></i>
+        <div class="default text">Select Language</div>
+        <div class="menu">
+          <div class="item" data-value="gb"><i class="gb flag"></i>English</div>
+          <div class="item" data-value="hu"><i class="hu flag"></i>Hungarian</div>
+        </div>
+      </div>
+    </div>
+    <input type="submit">
+  </form>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('profile-form').addEventListener('submit', (e) => {
+        e.preventDefault()
+        let lang = $('#lang').val()
+        let contactNo = $('#phonenumber').val()
+        $.post('/profile', {
+          lang: lang,
+          contactNo: contactNo
+        })
+      })
+    })
+  </script>
+
+  
+<% include ./partials/footer %>
