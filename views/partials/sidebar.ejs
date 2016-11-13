@@ -1,0 +1,45 @@
+  <div class="ui wide sidebar inverted vertical menu">
+    <div class="item">
+      <h2 class="ui heading">
+        <a href="/">The Shelter Foundation</a>
+      </h2>
+    </div>
+    
+    <% if (!user) { %>
+      <div class="item">
+        <a class="ui google plus button fluid" href="/auth/google">
+          <i class="google plus icon"></i>
+          Sign In with Google
+        </a>
+      </div>
+    <% } else { %>
+      <div class="item">
+        <img class="ui avatar image" src="<%= user.photo %>"> 
+        <span><%= user.name %></span>
+      </div>
+      <div class="item">
+        <a href="/profile"><i class="user icon"></i> My Profile</a>
+      </div>
+      <div class="item">
+        <a class="ui google plus button fluid" href="/logout">
+          <i class="sign out icon"></i>
+          Log Out
+        </a>
+      </div>
+    <% } %>
+  </div>
+  
+  <div class="sidebar-menu-button" onclick="$('.sidebar').sidebar('toggle')">
+    <button class="big ui black icon button">
+      <i class="fa fa-bars"></i>
+    </button>
+  </div>
+  
+  <style>
+    .sidebar-menu-button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 999;
+    }
+  </style>
