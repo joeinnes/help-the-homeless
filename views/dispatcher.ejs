@@ -1,11 +1,6 @@
-<% include ./partials/header %>
-<div class="ui inline nag">
-  <span class="title">
-    <%= nag %>
-  </span>
-  <i class="close icon"></i>
+<div id="mapid">
+  <% include ./partials/sidebar-button %>
 </div>
-<div id="mapid"></div>
 
 <% include ./partials/report-form %>
 
@@ -54,7 +49,7 @@ $.post('/get-jwt')
   mymap.locate({setView: true, maxZoom: 16})
   mymap.on('locationfound', onLocationFound)
   
-  function createMarker (report) {
+  function createMarker (report, bounce) {
     let latlng = [report.loc.coordinates[1], report.loc.coordinates[0]]
     let popUpText = `
     <div id="${report._id}">
@@ -93,36 +88,54 @@ $.post('/get-jwt')
           </div>
         </div>
         
+        <% if (user) { %>
+          <% if (user.roles.indexOf('dispatcher') > -1) { %>
+            <div class="item">
+              <div class="content">
+                <a class="ui yellow right labeled icon button fluid dispatch">
+                  <i class="emergency icon"></i>
+                  Dispatch
+                </a>
+              </div>
+            </div>
+          <% } %>
+        
+          <% if (user.roles.indexOf('crisisCar') > -1) { %>
+            <div class="item">
+              <div class="content">
+                <a class="ui green right labeled icon button fluid set-attended">
+                  <i class="checkmark icon"></i>
+                  Attended
+                </a>
+              </div>
+            </div>
+          <% } %>
+        <% } %>
+        
         <div class="item">
           <div class="content">
-            <div class="three ui buttons">
-              <a class="ui red button remove-pin">Remove</a>
-              <a class="ui yellow button dispatch">Dispatch</a>
-              <a class="ui green button set-attended">Attended</a>
-            </div>
+            <a class="ui red right labeled icon button fluid remove-pin">
+              <i class="remove circle icon"></i>
+              Remove
+            </a>
           </div>
         </div>
-        
+
       </div>
     </div>`
       dropPin(latlng, popUpText, report.type, report.priority, report._id)
   }
   
   $('#mapid').on('click', '.remove-pin', (e) => {
-    removeFromMap($(e.target).parent().parent().parent().parent().parent().attr('id'))
+    removeFromMap($(e.target).parent().parent().parent().parent().attr('id'))
   })
   
   $('#mapid').on('click', '.set-attended', (e) => {
-    let payload = {}
-    let el = $(e.target)
-    id = el.parent().parent().parent().parent().parent().attr('id')
-    socket.emit('attended', id)
+    socket.emit('attended', $(e.target).parent().parent().parent().parent().attr('id'))
   })
   
   $('#mapid').on('click', '.dispatch', (e) => {
-    let el = $(e.target)
-    id = el.parent().parent().parent().parent().parent().attr('id')
-    socket.emit('dispatch', id)
+    socket.emit('dispatch', $(e.target).parent().parent().parent().parent().attr('id'))
   })
   
   $('#mapid').on('click', '.set-priority', (e) => {
@@ -142,6 +155,7 @@ $.post('/get-jwt')
   function removeFromMap(id) {
     displayedReports[id].removeFrom(mymap)
     displayedReports[id] = null
+    socket.emit('removed report', id)
   }
   
   function onMapClick(e) {
@@ -186,7 +200,7 @@ $.post('/get-jwt')
     createMarker(newData)
   }
   
-  function dropPin(latlng, dataString, type, prio, id) {
+  function dropPin(latlng, dataString, type, prio, id, bounce) {
     let priorityColour = ""
     let iconString = ""
     switch (prio) {
@@ -210,7 +224,7 @@ $.post('/get-jwt')
         iconString = 'info-circle'
         break
       case 2:
-        iconString = 'crosshairs'
+        iconString = 'ambulance'
         break
       case 3:
         iconString = 'check'
@@ -218,7 +232,7 @@ $.post('/get-jwt')
       default:
         iconString = 'question-circle'
     }
-    let newPin = L.marker(latlng, {icon: pinDesigner(priorityColour, iconString)}).addTo(mymap)
+    let newPin = L.marker(latlng, {icon: pinDesigner(priorityColour, iconString)}).addTo(mymap).bounce(1)
       .bindPopup(dataString)
     displayedReports[id] = newPin
   }
@@ -256,5 +270,3 @@ $.post('/get-jwt')
 })
 })
 </script>
-
-<% include ./partials/footer %>
