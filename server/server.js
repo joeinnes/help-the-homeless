@@ -30,11 +30,11 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser((user, done) => {
   done(null, user)
 })
 //
-passport.deserializeUser(function(user, done) {
+passport.deserializeUser((user, done) => {
   // function(id, done)
   // User.findById(id, function(err, user) {
   //  done(err, user);

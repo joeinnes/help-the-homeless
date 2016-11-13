@@ -1,4 +1,4 @@
-<div class="sidebar-menu-button" onclick="$('.sidebar').sidebar('toggle')">
+<div class="sidebar-menu-button" onclick="event.stopPropagation(); $('.sidebar').sidebar('toggle')">
   <button class="big ui black icon button">
     <i class="fa fa-bars"></i>
   </button>

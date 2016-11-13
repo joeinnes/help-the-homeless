@@ -1,9 +1,6 @@
 const express = require('express')
-const bodyParser = require('body-parser')
 const router = express.Router()
 const db = require('../lib/db')
-const ReportSchema = require('../models/Report')
-const Report = db.model('Report', ReportSchema)
 const UserSchema = require('../models/User')
 const User = db.model('User', UserSchema)
 const jwt = require('jsonwebtoken')
@@ -15,10 +12,10 @@ const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
 //   credentials (in this case, a token, tokenSecret, and Google profile), and
 //   invoke a callback with a user object.
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLECONSUMERKEY,
-    clientSecret: process.env.GOOGLECONSUMERSECRET,
-    callbackURL: process.env.HOST + "/auth/google/callback"
-  },
+  clientID: process.env.GOOGLECONSUMERKEY,
+  clientSecret: process.env.GOOGLECONSUMERSECRET,
+  callbackURL: process.env.HOST + '/auth/google/callback'
+},
   (accessToken, refreshToken, profile, done) => {
     let user = User.findOne({ googleId: profile.id })
     user.then((data) => {
@@ -26,14 +23,15 @@ passport.use(new GoogleStrategy({
         return done(null, data)
       } else {
         let lang = ''
-        
+
         switch (profile._json.language) {
           case 'hu_HU':
             lang = 'hu'
+            break
           default:
             lang = 'gb'
         }
-        
+
         let newUser = new User({
           googleId: profile.id,
           name: profile.displayName,
@@ -41,52 +39,51 @@ passport.use(new GoogleStrategy({
           lang: lang,
           roles: ['user']
         })
-        
+
         let save = newUser.save()
-        
+
         save
-        .then((data) => {
-          return done(null, data)
-        })
-        
-        .catch((err) => {
-          return done(err, null)
-        })
+          .then((data) => {
+            return done(null, data)
+          })
+
+          .catch((err) => {
+            return done(err, null)
+          })
       }
     })
-    .catch((err) => {
-      return done(err, null)
-    })
+      .catch((err) => {
+        return done(err, null)
+      })
   }
-));
+))
 
 // GET
 router.get('/', (req, res) => {
   let nagMsg = ''
   if (!req.user) {
-    nagMsg = 'You\'re not logged in!',
+    nagMsg = "You're not logged in!"
     res.render('index', {
       user: null,
       nag: nagMsg
     })
     return
   }
-  
+
   if (!req.user.contactNo) {
-    nagMsg += 'We\'d really like your phone number to contact you about reports! Add it to your profile.'
+    nagMsg += "We'd really like your phone number to contact you about reports! Add it to your profile."
   }
-  
+
   res.render('index', {
     user: req.user,
     nag: nagMsg
   })
-  
 })
 
 router.get('/auth/google',
   passport.authenticate('google', { scope: 'https://www.googleapis.com/auth/userinfo.profile' }))
 
-router.get('/auth/google/callback', 
+router.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/', session: true }),
   (req, res) => {
     res.redirect('/')
@@ -94,7 +91,8 @@ router.get('/auth/google/callback',
 
 router.get('/profile', (req, res) => {
   res.render('profile', {
-    user: req.user
+    user: req.user,
+    nag: null
   })
 })
 
@@ -105,16 +103,16 @@ router.get('/logout', (req, res) => {
 
 router.post('/get-jwt', function (req, res) {
   if (!req.user) {
-    res.status(401).send('You aren\'t logged in')
+    res.status(401).send("You aren't logged in")
   }
   // we are sending the profile in the token
-  let token = jwt.sign(req.user, process.env.SERVERSECRET, { expiresIn: 60*60*24*7 }) // Valid for secs * mins * hrs * days
-  res.json({token: token});
+  let token = jwt.sign(req.user, process.env.SERVERSECRET, { expiresIn: 60 * 60 * 24 * 7 }) // Valid for secs * mins * hrs * days
+  res.json({token: token})
 })
 
 router.post('/profile', (req, res) => {
   if (!req.user) {
-    res.status(401).send('You aren\'t logged in')
+    res.status(401).send("You aren't logged in")
   }
   let contactNo = req.body.contactNo
   let lang = req.body.lang
@@ -124,17 +122,17 @@ router.post('/profile', (req, res) => {
   }}, { new: true })
   update.then((newUser) => {
     // User has to be logged in again, otherwise the updated data won't be reflected
-    req.logIn(newUser, function(error) {
+    req.logIn(newUser, function (error) {
       if (!error) {
         res.status(200).send('Updated successfully')
       } else {
-        res.status(500).send('There was a problem reloading the session! ' + err)
+        res.status(500).send('There was a problem reloading the session! ' + error)
       }
     })
   })
-  .catch((err) => {
-    res.status(500).send('Error! ' + err)
-  })
+    .catch((err) => {
+      res.status(500).send('Error! ' + err)
+    })
 })
 
 module.exports = router

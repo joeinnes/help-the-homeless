@@ -1,6 +1,12 @@
 <% include ./partials/header %>
+<% include ./partials/sidebar-button %>
 <div class="ui container">
-<h1 class="ui header"><%= user.name %></h1>
+  <div class="ui basic vertical segment">
+    <h1 class="ui header">
+      <img src="<%= user.photo %>0" class="ui circular image">
+      <%= user.name %>
+    </h1>
+  </div>
   <form class="ui form" id="profile-form">
     <div class="field">
       <label>Contact Number</label>
@@ -19,7 +25,7 @@
         </div>
       </div>
     </div>
-    <input type="submit">
+    <input type="submit" class="ui green button" value="Update my details">
   </form>
   
   <script>
